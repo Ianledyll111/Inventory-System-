@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Inventory System (Desktop Edition)</title>
+  <style>
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      font-size: 12px;
+    }
+
+    body {
+      background-color: #ECE9D8;
+      color: #000000;
+      padding: 6px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .tab-bar {
+      display: flex;
+      gap: 2px;
+      border-bottom: 1px solid #999999;
+      padding-left: 4px;
+      background: #D4D0C8;
+    }
+
+    .tab-btn {
+      background: linear-gradient(to bottom, #F4F4F4 0%, #D8D8D8 100%);
+      border: 1px solid #7F9DB9;
+      border-bottom: none;
+      border-radius: 3px 3px 0 0;
+      padding: 4px 12px;
+      font-weight: bold;
+      color: #000000;
+      cursor: pointer;
+      outline: none;
+    }
+
+    .tab-btn.active {
+      background: #ECE9D8;
+      border-color: #7F9DB9;
+      border-bottom: 2px solid #ECE9D8;
+      margin-bottom: -1px;
+      z-index: 2;
+    }
+
+    .window-panel {
+      background: #ECE9D8;
+      border: 1px solid #7F9DB9;
+      padding: 8px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .view-content {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+
+    .filter-bar {
+      background: #E3DFD0;
+      border: 1px solid #ACA899;
+      padding: 6px 10px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .filter-bar label {
+      font-weight: bold;
+    }
+
+    .win-input, .win-select {
+      background: #FFFFFF;
+      border: 1px solid #7F9DB9;
+      border-top-color: #6D7D8D;
+      padding: 3px 5px;
+      font-size: 12px;
+      outline: none;
+    }
+
+    .win-input:focus, .win-select:focus {
+      border-color: #316AC5;
+    }
+
+
+    .inventory-split {
+      display: flex;
+      gap: 8px;
+      flex: 1;
+      min-height: 360px;
+    }
+
+    .table-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      border: 1px solid #7F9DB9;
+      background: #FFFFFF;
+      overflow-y: auto;
+      max-height: 420px;
+    }
+
+    table.win-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    table.win-table th {
+      background: linear-gradient(to bottom, #FAF9F5 0%, #D8D4C7 100%);
+      border-right: 1px solid #ACA899;
+      border-bottom: 1px solid #ACA899;
+      padding: 4px 6px;
+      text-align: left;
+      font-weight: bold;
+      position: sticky;
+      top: 0;
+      z-index: 5;
+    }
+
+    table.win-table td {
+      border-right: 1px solid #E0E0E0;
+      border-bottom: 1px solid #E0E0E0;
+      padding: 4px 6px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    table.win-table tbody tr {
+      cursor: pointer;
+    }
+
+    table.win-table tbody tr:nth-child(even) {
+      background-color: #F9F8F3;
+    }
+
+    table.win-table tbody tr:hover {
+      background-color: #E2ECF7;
+    }
+
+    table.win-table tbody tr.selected-row {
+      background-color: #316AC5 !important;
+      color: #FFFFFF !important;
+    }
+
+    .form-section {
+      width: 260px;
+      flex-shrink: 0;
+    }
+
+    fieldset.win-fieldset {
+      border: 1px solid #ACA899;
+      padding: 10px;
+      background: #ECE9D8;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    legend.win-legend {
+      font-weight: bold;
+      padding: 0 4px;
+    }
+
+    .form-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .form-row label {
+      width: 65px;
+      font-weight: bold;
+    }
+
+    .form-row input, .form-row select {
+      flex: 1;
+    }
+
+    .win-btn {
+      background: linear-gradient(to bottom, #F4F4F4 0%, #D8D8D8 100%);
+      border: 1px solid #7F9DB9;
+      border-radius: 2px;
+      padding: 4px 10px;
+      font-weight: bold;
+      color: #000000;
+      cursor: pointer;
+      text-align: center;
+      outline: none;
+      box-shadow: inset 1px 1px 0 #FFFFFF;
+    }
+
+    .win-btn:hover {
+      background: linear-gradient(to bottom, #EEEEEE 0%, #C8C8C8 100%);
+    }
+
+    .win-btn:active {
+      background: linear-gradient(to bottom, #C0C0C0 0%, #E0E0E0 100%);
+      box-shadow: inset 1px 1px 2px rgba(0,0,0,0.3);
+    }
+
+    .btn-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .kpi-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      background: #D4D0C8;
+      padding: 4px;
+      border: 1px solid #ACA899;
+    }
+
+    .kpi-card {
+      background: #ECE9D8;
+      border: 1px solid #7F9DB9;
+      padding: 6px 10px;
+      box-shadow: inset 1px 1px 0 #FFFFFF;
+    }
+
+    .kpi-card-title {
+      font-size: 11px;
+      font-weight: bold;
+      color: #444444;
+    }
+
+    .kpi-card-value {
+      font-size: 18px;
+      font-weight: bold;
+      color: #000000;
+      margin-top: 2px;
+    }
+
+    .notice-banner {
+      background: #FFF2CC;
+      border: 1px solid #ACA899;
+      padding: 4px 8px;
+      font-size: 11px;
+      font-weight: bold;
+      color: #333333;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchView('inventoryView', this)">1. Product Management</button>
+    <button class="tab-btn" onclick="switchView('stockView', this)">2. Stock In / Stock Out</button>
+    <button class="tab-btn" onclick="switchView('reportsView', this)">3. Reports</button>
+  </div>
+
+  <div class="window-panel">
+
+    <div id="noticeBanner" class="notice-banner hidden"></div>
+
+    <div id="inventoryView" class="view-content">
+      
+      <div class="filter-bar">
+        <label for="searchInput">Search Item:</label>
+        <input type="text" id="searchInput" class="win-input" placeholder="Type item name..." style="width: 180px;" oninput="renderInventoryTable()">
+        
+        <label for="categoryFilter">Category:</label>
+        <select id="categoryFilter" class="win-select" onchange="renderInventoryTable()">
+          <option value="ALL">All Categories</option>
+        </select>
+
+        <button class="win-btn" onclick="resetFilters()">Reset Filter</button>
+      </div>
+
+      <div class="inventory-split">
+        
+        <div class="table-section">
+          <table class="win-table">
+            <thead>
+              <tr>
+                <th style="width: 50px;">ID</th>
+                <th>Item Name</th>
+                <th style="width: 120px;">Category</th>
+                <th style="width: 80px;">Qty</th>
+                <th style="width: 90px;">Price (PHP)</th>
+                <th style="width: 80px;">Status</th>
+              </tr>
+            </thead>
+            <tbody id="inventoryTbody">
+            </tbody>
+          </table>
+        </div>
+
+        <div class="form-section">
+          <fieldset class="win-fieldset">
+            <legend class="win-legend">Item Details</legend>
+            
+            <input type="hidden" id="editItemId">
+
+            <div class="form-row">
+              <label for="itemName">Name:</label>
+              <input type="text" id="itemName" class="win-input" autocomplete="off">
+            </div>
+
+            <div class="form-row">
+              <label for="itemCategory">Category:</label>
+              <input type="text" id="itemCategory" class="win-input" autocomplete="off" placeholder="e.g. Stationery">
+            </div>
+
+            <div class="form-row">
+              <label for="itemQty">Quantity:</label>
+              <input type="number" id="itemQty" class="win-input" min="0" autocomplete="off">
+            </div>
+
+            <div class="form-row">
+              <label for="itemPrice">Price:</label>
+              <input type="number" id="itemPrice" class="win-input" step="0.01" min="0" autocomplete="off">
+            </div>
+
+            <div class="btn-group">
+              <button class="win-btn" onclick="addItem()">Add</button>
+              <button class="win-btn" onclick="updateItem()">Update</button>
+              <button class="win-btn" onclick="deleteItem()">Delete</button>
+              <button class="win-btn" onclick="clearForm()">Clear</button>
+            </div>
+          </fieldset>
+        </div>
+
+      </div>
+
+      <div class="kpi-strip">
+        <div class="kpi-card">
+          <div class="kpi-card-title">Total Items</div>
+          <div id="statTotalItems" class="kpi-card-value">0</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card-title">Total Quantity</div>
+          <div id="statTotalQty" class="kpi-card-value">0</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card-title">Total Value (PHP)</div>
+          <div id="statTotalValue" class="kpi-card-value">0.00</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card-title">Low Stock (&lt;= 5)</div>
+          <div id="statLowStock" class="kpi-card-value" style="color: #CC0000;">0</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div id="stockView" class="view-content hidden">
+      <div class="inventory-split">
+        
+        <!-- Stock Action Panel (Left) -->
+        <div class="form-section" style="width: 280px;">
+          <fieldset class="win-fieldset">
+            <legend class="win-legend">Record Stock Movement</legend>
+            
+            <div class="form-row">
+              <label for="stockItemSelect" style="width: 75px;">Item:</label>
+              <select id="stockItemSelect" class="win-select">
+                <option value="">-- Select Item --</option>
+              </select>
+            </div>
+
+            <div class="form-row">
+              <label for="stockAction" style="width: 75px;">Movement:</label>
+              <select id="stockAction" class="win-select">
+                <option value="Stock In">Stock In (+)</option>
+                <option value="Stock Out">Stock Out (-)</option>
+              </select>
+            </div>
+
+            <div class="form-row">
+              <label for="stockQuantity" style="width: 75px;">Quantity:</label>
+              <input type="number" id="stockQuantity" class="win-input" min="1" value="1">
+            </div>
+
+            <div class="form-row">
+              <label for="stockNotes" style="width: 75px;">Remarks:</label>
+              <input type="text" id="stockNotes" class="win-input" placeholder="e.g., Supplier Delivery">
+            </div>
+
+            <button class="win-btn" style="margin-top: 10px;" onclick="saveStockMovement()">Submit Movement</button>
+          </fieldset>
+        </div>
+
+        <div class="table-section">
+          <table class="win-table">
+            <thead>
+              <tr>
+                <th style="width: 60px;">Log ID</th>
+                <th style="width: 130px;">Date & Time</th>
+                <th>Item Name</th>
+                <th style="width: 80px;">Type</th>
+                <th style="width: 60px;">Qty</th>
+                <th>Remarks</th>
+              </tr>
+            </thead>
+            <tbody id="stockLogTbody">
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+
+    <div id="reportsView" class="view-content hidden">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-weight: bold;">Low Stock Warning Report (Quantity &lt;= 5) | Total Inventory Value: PHP <span id="reportTotalVal">0.00</span></span>
+        <button class="win-btn" onclick="exportCSV()">Export Inventory CSV</button>
+      </div>
+
+      <div class="table-section" style="flex: 1;">
+        <table class="win-table">
+          <thead>
+            <tr>
+              <th style="width: 50px;">ID</th>
+              <th>Item Name</th>
+              <th>Category</th>
+              <th style="width: 90px;">Current Stock</th>
+              <th style="width: 100px;">Price (PHP)</th>
+            </tr>
+          </thead>
+          <tbody id="lowStockTbody">
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = "https://skkoqlvorfhyiunaxqdj.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_RadCBeFRAbzc8zQqyjo-hw_OPkNfOEO";
+
+    const STORAGE_ITEMS_KEY = "student_inv_items_v1";
+    const STORAGE_LOGS_KEY = "student_inv_logs_v1";
+
+    const SAMPLE_ITEMS = [
+      { id: 1, name: "Notebook A5 Grid", category: "School Supplies", quantity: 45, price: 35.00 },
+      { id: 2, name: "Gel Pen 0.5mm Black", category: "Writing Instruments", quantity: 4, price: 18.00 },
+      { id: 3, name: "Whiteboard Marker Blue", category: "Writing Instruments", quantity: 3, price: 45.00 },
+      { id: 4, name: "Correction Tape", category: "Stationery", quantity: 14, price: 28.50 },
+      { id: 5, name: "Scientific Calculator", category: "Electronics", quantity: 2, price: 850.00 }
+    ];
+
+    const SAMPLE_LOGS = [
+      { id: 1001, created_at: "2026-11-12T09:30:00Z", product_id: 2, product_name: "Gel Pen 0.5mm Black", type: "Stock Out", qty_changed: 6, note: "Distributed to Lab" }
+    ];
+
+    let supabaseClient = null;
+    let isCloudConnected = false;
+
+    let items = [];
+    let stockLogs = [];
+    let selectedItemId = null;
+
+    window.addEventListener("DOMContentLoaded", () => {
+      initDatabase();
+    });
+
+    function loadLocalData() {
+      const savedItems = localStorage.getItem(STORAGE_ITEMS_KEY);
+      const savedLogs = localStorage.getItem(STORAGE_LOGS_KEY);
+      items = savedItems ? JSON.parse(savedItems) : [...SAMPLE_ITEMS];
+      stockLogs = savedLogs ? JSON.parse(savedLogs) : [...SAMPLE_LOGS];
+    }
+
+    function saveLocalData() {
+      localStorage.setItem(STORAGE_ITEMS_KEY, JSON.stringify(items));
+      localStorage.setItem(STORAGE_LOGS_KEY, JSON.stringify(stockLogs));
+    }
+
+    async function initDatabase() {
+      if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+        isCloudConnected = false;
+        loadLocalData();
+        renderAll();
+        return;
+      }
+
+      try {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        await loadSupabaseData();
+      } catch (error) {
+        console.error("Supabase Initialization Error:", error);
+        isCloudConnected = false;
+        loadLocalData();
+        renderAll();
+      }
+    }
+
+    async function loadSupabaseData() {
+      if (!supabaseClient) return;
+
+      const { data: prodData, error: prodError } = await supabaseClient
+        .from("products")
+        .select("*")
+        .order("id", { ascending: true });
+
+      if (prodError) {
+        isCloudConnected = false;
+        loadLocalData();
+        renderAll();
+        return;
+      }
+
+      const { data: logData, error: logError } = await supabaseClient
+        .from("stock_logs")
+        .select("*")
+        .order("id", { ascending: false });
+
+      isCloudConnected = true;
+
+      items = (prodData || []).map(p => ({
+        id: p.id,
+        name: p.name || "",
+        category: p.category || "General",
+        quantity: Number(p.quantity || 0),
+        price: Number(p.price || 0)
+      }));
+
+      stockLogs = (!logError && logData) ? logData.map(l => ({
+        id: l.id,
+        created_at: l.created_at || "",
+        product_id: l.product_id,
+        product_name: l.product_name || "",
+        type: l.type || "Stock In",
+        qty_changed: Number(l.qty_changed || l.qty || 0),
+        note: l.note || l.remarks || ""
+      })) : [];
+
+      renderAll();
+    }
+ 
+    function switchView(viewId, btn) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.view-content').forEach(v => v.classList.add('hidden'));
+
+      btn.classList.add('active');
+      document.getElementById(viewId).classList.remove('hidden');
+
+      renderAll();
+    }
+
+    function renderAll() {
+      populateCategoryDropdown();
+      renderInventoryTable();
+      updateKPIs();
+      populateStockSelect();
+      renderStockLogTable();
+      renderLowStockReport();
+    }
+
+    function populateCategoryDropdown() {
+      const select = document.getElementById('categoryFilter');
+      const current = select.value;
+      const categories = [...new Set(items.map(i => i.category))];
+
+      select.innerHTML = '<option value="ALL">All Categories</option>';
+      categories.forEach(cat => {
+        const opt = document.createElement('option');
+        opt.value = cat;
+        opt.innerText = cat;
+        select.appendChild(opt);
+      });
+
+      select.value = categories.includes(current) ? current : "ALL";
+    }
+
+    function renderInventoryTable() {
+      const tbody = document.getElementById('inventoryTbody');
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      const selectedCat = document.getElementById('categoryFilter').value;
+
+      tbody.innerHTML = '';
+
+      const filtered = items.filter(item => {
+        const matchesSearch = item.name.toLowerCase().includes(search) || item.category.toLowerCase().includes(search);
+        const matchesCategory = (selectedCat === 'ALL' || item.category === selectedCat);
+        return matchesSearch && matchesCategory;
+      });
+
+      filtered.forEach(item => {
+        const tr = document.createElement('tr');
+        if (item.id === selectedItemId) tr.classList.add('selected-row');
+
+        tr.onclick = () => selectItem(item);
+
+        const statusTag = item.quantity <= 5 
+          ? '<span style="color:red; font-weight:bold;">Low Stock</span>' 
+          : '<span style="color:green;">Normal</span>';
+
+        tr.innerHTML = `
+          <td>${item.id}</td>
+          <td>${escapeHtml(item.name)}</td>
+          <td>${escapeHtml(item.category)}</td>
+          <td>${item.quantity}</td>
+          <td>${Number(item.price).toFixed(2)}</td>
+          <td>${statusTag}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function selectItem(item) {
+      selectedItemId = item.id;
+      document.getElementById('editItemId').value = item.id;
+      document.getElementById('itemName').value = item.name;
+      document.getElementById('itemCategory').value = item.category;
+      document.getElementById('itemQty').value = item.quantity;
+      document.getElementById('itemPrice').value = item.price;
+
+      renderInventoryTable();
+    }
+
+    function updateKPIs() {
+      const totalItems = items.length;
+      const totalQty = items.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
+      const totalVal = items.reduce((sum, item) => sum + (Number(item.quantity || 0) * Number(item.price || 0)), 0);
+      const lowStockCount = items.filter(item => Number(item.quantity || 0) <= 5).length;
+
+      document.getElementById('statTotalItems').innerText = totalItems;
+      document.getElementById('statTotalQty').innerText = totalQty;
+      document.getElementById('statTotalValue').innerText = totalVal.toFixed(2);
+      document.getElementById('statLowStock').innerText = lowStockCount;
+
+      const reportValEl = document.getElementById('reportTotalVal');
+      if (reportValEl) reportValEl.innerText = totalVal.toFixed(2);
+    }
+
+    async function addItem() {
+      const name = document.getElementById('itemName').value.trim();
+      const category = document.getElementById('itemCategory').value.trim();
+      const qty = parseInt(document.getElementById('itemQty').value, 10);
+      const price = parseFloat(document.getElementById('itemPrice').value);
+
+      if (!name || !category || isNaN(qty) || isNaN(price)) {
+        showMessage("Please enter valid item details (Name, Category, Quantity, and Price).");
+        return;
+      }
+
+      if (isCloudConnected && supabaseClient) {
+        const { error } = await supabaseClient
+          .from("products")
+          .insert([{ name, category, quantity: qty, price }]);
+
+        if (error) {
+          showMessage("Database Insert Error: " + error.message);
+          return;
+        }
+        clearForm();
+        await loadSupabaseData();
+      } else {
+        const nextId = items.length > 0 ? Math.max(...items.map(i => Number(i.id) || 0)) + 1 : 1;
+        items.push({ id: nextId, name, category, quantity: qty, price });
+        saveLocalData();
+        clearForm();
+        renderAll();
+      }
+    }
+
+    async function updateItem() {
+      if (selectedItemId === null) {
+        showMessage("Click on a row in the table first to select an item.");
+        return;
+      }
+
+      const name = document.getElementById('itemName').value.trim();
+      const category = document.getElementById('itemCategory').value.trim();
+      const qty = parseInt(document.getElementById('itemQty').value, 10);
+      const price = parseFloat(document.getElementById('itemPrice').value);
+
+      if (!name || !category || isNaN(qty) || isNaN(price)) {
+        showMessage("Please enter valid item details.");
+        return;
+      }
+
+      if (isCloudConnected && supabaseClient) {
+        const { error } = await supabaseClient
+          .from("products")
+          .update({ name, category, quantity: qty, price })
+          .eq("id", selectedItemId);
+
+        if (error) {
+          showMessage("Database Update Error: " + error.message);
+          return;
+        }
+        clearForm();
+        await loadSupabaseData();
+      } else {
+        const item = items.find(i => i.id === selectedItemId);
+        if (item) {
+          item.name = name;
+          item.category = category;
+          item.quantity = qty;
+          item.price = price;
+          saveLocalData();
+          clearForm();
+          renderAll();
+        }
+      }
+    }
+
+    async function deleteItem() {
+      if (selectedItemId === null) {
+        showMessage("Click on a row in the table first to select an item to delete.");
+        return;
+      }
+
+      const item = items.find(i => i.id === selectedItemId);
+      if (!item) return;
+
+      if (isCloudConnected && supabaseClient) {
+        const { error } = await supabaseClient
+          .from("products")
+          .delete()
+          .eq("id", selectedItemId);
+
+        if (error) {
+          showMessage("Database Delete Error: " + error.message);
+          return;
+        }
+        clearForm();
+        await loadSupabaseData();
+      } else {
+        items = items.filter(i => i.id !== selectedItemId);
+        saveLocalData();
+        clearForm();
+        renderAll();
+      }
+    }
+
+    function clearForm() {
+      selectedItemId = null;
+      document.getElementById('editItemId').value = '';
+      document.getElementById('itemName').value = '';
+      document.getElementById('itemCategory').value = '';
+      document.getElementById('itemQty').value = '';
+      document.getElementById('itemPrice').value = '';
+      renderInventoryTable();
+    }
+
+    function resetFilters() {
+      document.getElementById('searchInput').value = '';
+      document.getElementById('categoryFilter').value = 'ALL';
+      renderInventoryTable();
+    }
+
+    function populateStockSelect() {
+      const select = document.getElementById('stockItemSelect');
+      select.innerHTML = '<option value="">-- Select Item --</option>';
+
+      items.forEach(i => {
+        const opt = document.createElement('option');
+        opt.value = i.id;
+        opt.innerText = `[#${i.id}] ${i.name} (Stock: ${i.quantity})`;
+        select.appendChild(opt);
+      });
+    }
+
+    async function saveStockMovement() {
+      const itemId = Number(document.getElementById('stockItemSelect').value);
+      const action = document.getElementById('stockAction').value;
+      const qty = parseInt(document.getElementById('stockQuantity').value, 10);
+      const notes = document.getElementById('stockNotes').value.trim() || action;
+
+      if (!itemId || isNaN(qty) || qty <= 0) {
+        showMessage("Select an item and enter a valid quantity.");
+        return;
+      }
+
+      const item = items.find(i => Number(i.id) === itemId);
+      if (!item) return;
+
+      if (action === 'Stock Out' && item.quantity < qty) {
+        showMessage(`Cannot stock out ${qty} items. Only ${item.quantity} in stock.`);
+        return;
+      }
+
+      const newQty = action === 'Stock In' ? item.quantity + qty : item.quantity - qty;
+
+      if (isCloudConnected && supabaseClient) {
+        const { error: prodErr } = await supabaseClient
+          .from("products")
+          .update({ quantity: newQty })
+          .eq("id", itemId);
+
+        if (prodErr) {
+          showMessage("Database Stock Update Error: " + prodErr.message);
+          return;
+        }
+
+        const { error: logErr } = await supabaseClient
+          .from("stock_logs")
+          .insert([{
+            product_id: itemId,
+            product_name: item.name,
+            type: action === 'Stock In' ? 'IN' : 'OUT',
+            qty: qty,
+            remarks: notes
+          }]);
+
+        if (logErr) {
+          showMessage("Database Log Insert Error: " + logErr.message);
+          return;
+        }
+
+        document.getElementById('stockNotes').value = '';
+        await loadSupabaseData();
+      } else {
+        item.quantity = newQty;
+        const nextLogId = stockLogs.length > 0 ? Math.max(...stockLogs.map(l => Number(l.id) || 1000)) + 1 : 1001;
+        stockLogs.unshift({
+          id: nextLogId,
+          created_at: new Date().toISOString(),
+          product_id: itemId,
+          product_name: item.name,
+          type: action,
+          qty_changed: qty,
+          note: notes
+        });
+        saveLocalData();
+        document.getElementById('stockNotes').value = '';
+        renderAll();
+      }
+    }
+
+    function renderStockLogTable() {
+      const tbody = document.getElementById('stockLogTbody');
+      tbody.innerHTML = '';
+
+      stockLogs.forEach(log => {
+        const formattedTime = log.created_at
+          ? new Date(log.created_at).toLocaleString([], { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
+          : '';
+        const isStockIn = (log.type === 'Stock In' || log.type === 'IN');
+        const displayType = isStockIn ? 'Stock In' : 'Stock Out';
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${log.id}</td>
+          <td>${formattedTime}</td>
+          <td>${escapeHtml(log.product_name)}</td>
+          <td style="font-weight:bold; color:${isStockIn ? 'green' : 'red'};">${displayType}</td>
+          <td>${log.qty_changed}</td>
+          <td>${escapeHtml(log.note)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderLowStockReport() {
+      const tbody = document.getElementById('lowStockTbody');
+      tbody.innerHTML = '';
+
+      const low = items.filter(i => i.quantity <= 5);
+
+      if (low.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No items currently low in stock (&lt;= 5).</td></tr>';
+        return;
+      }
+
+      low.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${item.id}</td>
+          <td>${escapeHtml(item.name)}</td>
+          <td>${escapeHtml(item.category)}</td>
+          <td style="color:red; font-weight:bold;">${item.quantity}</td>
+          <td>${Number(item.price).toFixed(2)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function exportCSV() {
+      let csv = "ID,Name,Category,Quantity,Price\n";
+      items.forEach(i => {
+        csv += `${i.id},"${i.name}","${i.category}",${i.quantity},${i.price}\n`;
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = "inventory_report.csv";
+      a.click();
+    }
+
+    function showMessage(msg) {
+      const banner = document.getElementById('noticeBanner');
+      banner.innerText = "Notice: " + msg;
+      banner.classList.remove('hidden');
+      setTimeout(() => {
+        banner.classList.add('hidden');
+      }, 3500);
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+  </script>
+</body>
+</html>
